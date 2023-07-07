@@ -8,9 +8,7 @@ router.get('/', async (req, res) => {
   // find all products
   // be sure to include its associated Category and Tag data
   try{
-    const ProductData = await Product.findAll({
-      include: [{ model: id }]
-    });
+    const ProductData = await Product.findAll({});
     res.status(200).json(ProductData);
   } catch (err) {
     res.status(500).json("Something went wrong", err)
@@ -19,13 +17,27 @@ router.get('/', async (req, res) => {
 
 
 // get one product
-router.get('/:id', (req, res) => {
+router.get('/:id', async (req, res) => {
   // find a single product by its `id`
   // be sure to include its associated Category and Tag data
+  try {
+    const productData = await Product.findByPk(req.params.id, {
+      include: [{ model: id },],
+    });
+
+    if (!productData) {
+      res.status(404).json({ message: 'No Product found with that id!' });
+      return;
+    }
+
+    res.status(200).json(productData);
+  } catch (err) {
+    res.status(500).json(err);
+  }
 });
 
 // create new product
-router.post('/', (req, res) => {
+router.post('/', async (req, res) => {
   /* req.body should look like this...
     {
       product_name: "Basketball",
@@ -34,6 +46,17 @@ router.post('/', (req, res) => {
       tagIds: [1, 2, 3, 4]
     }
   */
+    try {
+      const productData = await Product.create({
+        username: req.body.product_name,
+        price: req.body.price,
+        stock: req.body.stock,
+        tagIds: req.body.tag_id,
+      });
+      res.status(200).json(productData);
+    } catch (err) {
+      res.status(400).json(err);
+    }
   Product.create(req.body)
     .then((product) => {
       // if there's product tags, we need to create pairings to bulk create in the ProductTag model
