@@ -1,6 +1,6 @@
 const router = require('express').Router();
 const { Product, Category, Tag, ProductTag } = require('../../models');
-const sequelize = require('../../config/connection')
+
 
 // The `/api/products` endpoint
 
@@ -9,11 +9,16 @@ router.get('/', async (req, res) => {
   // find all products
   // be sure to include its associated Category and Tag data
   try{
-    const ProductData = await Product.findAll({});
+    const ProductData = await Product.findAll({
+      include: [
+        { model: Category },
+        { model: Tag, through: { model: ProductTag} }
+      ],
+    });
     res.status(200).json(ProductData);
   } catch (err) {
     res.status(500).json("Something went wrong", err)
-  }
+  }ç
 });
 
 
@@ -23,7 +28,9 @@ router.get('/:id', async (req, res) => {
   // be sure to include its associated Category and Tag data
   try {
     const productData = await Product.findByPk(req.params.id, {
-      include: [{ model: id }],
+      include: [{ model: Category },
+      { model: Tag, through: { model: productData } }
+    ],
     });
 
     if (!productData) {
